@@ -1,94 +1,46 @@
-name: Build Android APK
+FAILURE: Build failed with an exception.
+219
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+220
+* What went wrong:
+221
+Execution failed for task ':app:mergeDebugResources' (registered by plugin 'com.android.internal.application').
+222
+> /home/runner/work/Aviator-auto-analyzer/Aviator-auto-analyzer/extracted/app/src/main/res/values/strings.xml:2:2: Error: The markup in the document following the root element must be well-formed.
+223
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+224
+* Try:
+225
+> Run with --stacktrace option to get the stack trace.
+226
+> Run with --info or --debug option to get more log output.
+227
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+228
+> Get more help at https://help.gradle.org.
+229
 
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v5
+230
+BUILD FAILED in 40s
+231
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+232
 
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
+233
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+234
 
-      - name: Extract Android project
-        shell: bash
-        run: |
-          set -e
-
-          mkdir -p extracted
-
-          ZIP_FILE=$(find . -maxdepth 1 -type f -iname '*.zip' | head -n 1)
-
-          if [ -z "$ZIP_FILE" ]; then
-            echo "No ZIP file found in the repository."
-            exit 1
-          fi
-
-          echo "Using ZIP: $ZIP_FILE"
-
-          unzip -q "$ZIP_FILE" -d extracted
-
-          GRADLEW=$(find extracted -type f -name gradlew | head -n 1)
-
-          if [ -z "$GRADLEW" ]; then
-            echo "gradlew was not found inside the ZIP."
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$GRADLEW")
-
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-
-      - name: Fix accessibility service description
-        shell: bash
-        run: |
-          set -e
-
-          FILE=$(find extracted -type f -path "*/app/src/main/res/xml/accessibility_service_config.xml" | head -n 1)
-
-          if [ -z "$FILE" ]; then
-            echo "accessibility_service_config.xml not found"
-            exit 1
-          fi
-
-          sed -i 's/description="Reads visible Aviator round results and updates the local analyzer\."/description="@string\/accessibility_service_description"/' "$FILE"
-
-          STRINGS=$(find extracted -type f -path "*/app/src/main/res/values/strings.xml" | head -n 1)
-
-          if [ -z "$STRINGS" ]; then
-            echo "strings.xml not found"
-            exit 1
-          fi
-
-          if ! grep -q 'accessibility_service_description' "$STRINGS"; then
-            sed -i '/<\/resources>/i\    <string name="accessibility_service_description">Reads visible Aviator round results and updates the local analyzer.</string>' "$STRINGS"
-          fi
-
-      - name: Build APK
-        shell: bash
-        run: |
-          set -e
-
-          chmod +x "$PROJECT_DIR/gradlew"
-
-          cd "$PROJECT_DIR"
-
-          ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-apk
-          path: |
-            extracted/**/app/build/outputs/apk/**/*.apk
-            extracted/**/app/build/outputs/apk/*.apk
+235
+For more on this, please refer to https://docs.gradle.org/9.7.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+236
+6 actionable tasks: 6 executed
+237
+Error: Process completed with exit code 1.
+Upload APK
+0s
+Post Set up Java
+1s
+Post Checkout project
+0s
+Complete job
