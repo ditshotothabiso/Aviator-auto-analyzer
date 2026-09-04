@@ -49,12 +49,31 @@ jobs:
 
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
+      -       - name: Fix accessibility service description
+        run: |
+          FILE=$(find extracted -type f -path "*/app/src/main/res/xml/accessibility_service_config.xml" | head -n 1)
+
+          if [ -z "$FILE" ]; then
+            echo "accessibility_service_config.xml not found"
+            exit 1
+          fi
+
+          sed -i 's/description="Reads visible Aviator round results and updates the local analyzer\."/description="@string\/accessibility_service_description"/' "$FILE"
+
+          STRINGS=$(find extracted -type f -path "*/app/src/main/res/values/strings.xml" | head -n 1)
+
+          if [ -z "$STRINGS" ]; then
+            echo "strings.xml not found"
+            exit 1
+          fi
+
+          sed -i '/<\/resources>/i\    <string name="accessibility_service_description">Reads visible Aviator round results and updates the local analyzer.</string>' "$STRINGS"
+
       - name: Build APK
         run: |
           chmod +x "$PROJECT_DIR/gradlew"
           cd "$PROJECT_DIR"
           ./gradlew assembleDebug
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
