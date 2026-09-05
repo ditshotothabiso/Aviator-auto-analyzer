@@ -20,34 +20,34 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Extract Android project
+      - name: Extract Version 5 project
         shell: bash
         run: |
           set -e
 
           mkdir -p extracted
 
-          ZIP_FILE=$(find . -maxdepth 1 -type f -iname '*.zip' | head -n 1)
+          ZIP_FILE="./AviatorAuto_v5_GitHub_Upload.zip"
 
-          if [ -z "$ZIP_FILE" ]; then
-            echo "No ZIP file found in the repository."
+          if [ ! -f "$ZIP_FILE" ]; then
+            echo "Version 5 ZIP was not found."
             exit 1
           fi
 
-          echo "Using ZIP: $ZIP_FILE"
+          echo "Using: $ZIP_FILE"
           unzip -q "$ZIP_FILE" -d extracted
 
           GRADLEW=$(find extracted -type f -name gradlew | head -n 1)
 
           if [ -z "$GRADLEW" ]; then
-            echo "gradlew was not found inside the ZIP."
+            echo "gradlew was not found."
             exit 1
           fi
 
           PROJECT_DIR=$(dirname "$GRADLEW")
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Build APK
+      - name: Build Version 5 APK
         shell: bash
         run: |
           set -e
@@ -55,10 +55,10 @@ jobs:
           cd "$PROJECT_DIR"
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Upload Version 5 APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: Aviator-Auto-Analyzer-v5
           path: |
             extracted/**/app/build/outputs/apk/**/*.apk
             extracted/**/app/build/outputs/apk/*.apk
