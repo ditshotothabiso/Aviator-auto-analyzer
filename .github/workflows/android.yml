@@ -47,72 +47,12 @@ jobs:
           PROJECT_DIR=$(dirname "$GRADLEW")
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Fix accessibility service XML
-        shell: bash
-        run: |
-          set -e
-
-          FILE=$(find extracted -type f -path "*/app/src/main/res/xml/accessibility_service_config.xml" | head -n 1)
-
-          if [ -z "$FILE" ]; then
-            echo "accessibility_service_config.xml not found"
-            exit 1
-          fi
-
-          sed -i 's#description="Reads visible Aviator round results and updates the local analyzer\."#description="@string/accessibility_service_description"#' "$FILE"
-
-          echo "Accessibility XML fixed."
-
-      - name: Add accessibility description string
-        shell: bash
-        run: |
-          set -e
-
-          STRINGS=$(find extracted -type f -path "*/app/src/main/res/values/strings.xml" | head -n 1)
-
-          if [ -z "$STRINGS" ]; then
-            echo "strings.xml not found"
-            exit 1
-          fi
-
-          python3 - "$STRINGS" <<'PY'
-          import sys
-          import xml.etree.ElementTree as ET
-
-          filename = sys.argv[1]
-
-          tree = ET.parse(filename)
-          root = tree.getroot()
-
-          name = "accessibility_service_description"
-
-          exists = False
-
-          for item in root.findall("string"):
-              if item.get("name") == name:
-                  item.text = "Reads visible Aviator round results and updates the local analyzer."
-                  exists = True
-
-          if not exists:
-              element = ET.Element("string")
-              element.set("name", name)
-              element.text = "Reads visible Aviator round results and updates the local analyzer."
-              root.append(element)
-
-          tree.write(filename, encoding="utf-8", xml_declaration=True)
-
-          print("strings.xml fixed successfully.")
-          PY
-
       - name: Build APK
         shell: bash
         run: |
           set -e
-
           chmod +x "$PROJECT_DIR/gradlew"
-
           cd "$PROJECT_DIR"
-
           ./gradlew assembleDebug
 
       - name: Upload APK
